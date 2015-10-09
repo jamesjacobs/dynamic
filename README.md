@@ -1,7 +1,7 @@
 Dynamic
 =======
 
-[![Build Status](https://secure.travis-ci.org/uniter/phptoast.png?branch=master)](http://travis-ci.org/asmblah/dynamic)
+[![Build Status](https://secure.travis-ci.org/asmblah/dynamic.png?branch=master)](http://travis-ci.org/asmblah/dynamic)
 
 Declarative DOM behaviour.
 
