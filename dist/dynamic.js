@@ -12454,6 +12454,14 @@ _.extend(Dynamic.prototype, {
         });
 
         return dynamic;
+    },
+
+    use: function (plugin) {
+        var dynamic = this;
+
+        plugin(dynamic);
+
+        return dynamic;
     }
 });
 
