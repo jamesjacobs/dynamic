@@ -12400,7 +12400,11 @@ function Dynamic($, $context) {
 
 _.extend(Dynamic.prototype, {
     addBehaviour: function (name, handler) {
-        this.behaviours[name] = handler;
+        var dynamic = this;
+
+        dynamic.behaviours[name] = handler;
+
+        return dynamic;
     },
 
     applyTo: function ($container) {
@@ -12418,7 +12422,7 @@ _.extend(Dynamic.prototype, {
                     };
 
                 $element.on(onEvent, function () {
-                    handler($element, options, dynamic.$context);
+                    handler($element, options, dynamic.$context, $);
                 });
             });
         });
@@ -12443,11 +12447,13 @@ _.extend(Dynamic.prototype, {
                     }
 
                     $element.on(onEvent, function () {
-                        handler($element, options, dynamic.$context);
+                        handler($element, options, dynamic.$context, $);
                     });
                 });
             });
         });
+
+        return dynamic;
     }
 });
 
