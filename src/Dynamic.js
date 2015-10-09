@@ -24,7 +24,11 @@ function Dynamic($, $context) {
 
 _.extend(Dynamic.prototype, {
     addBehaviour: function (name, handler) {
-        this.behaviours[name] = handler;
+        var dynamic = this;
+
+        dynamic.behaviours[name] = handler;
+
+        return dynamic;
     },
 
     applyTo: function ($container) {
@@ -72,6 +76,8 @@ _.extend(Dynamic.prototype, {
                 });
             });
         });
+
+        return dynamic;
     }
 });
 

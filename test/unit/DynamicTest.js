@@ -10,6 +10,7 @@
 'use strict';
 
 var $ = require('jquery'),
+    sinon = require('sinon'),
     Dynamic = require('../../src/Dynamic');
 
 describe('Dynamic', function () {
@@ -20,11 +21,21 @@ describe('Dynamic', function () {
         this.dynamic = new Dynamic($, this.$html);
     });
 
+    describe('addBehaviour()', function () {
+        it('should provide a fluent interface', function () {
+            expect(this.dynamic.addBehaviour('test', sinon.stub())).to.equal(this.dynamic);
+        });
+    });
+
     describe('applyTo()', function () {
         beforeEach(function () {
             this.callApplyTo = function () {
                 this.dynamic.applyTo(this.$html);
             }.bind(this);
+        });
+
+        it('should provide a fluent interface', function () {
+            expect(this.dynamic.applyTo($('<div></div>'))).to.equal(this.dynamic);
         });
 
         describe('when an element defines its behaviour via data-* attributes', function () {
