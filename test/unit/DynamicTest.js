@@ -202,4 +202,28 @@ describe('Dynamic', function () {
             });
         });
     });
+
+    describe('use()', function () {
+        it('should provide a fluent interface', function () {
+            var stubPlugin = sinon.stub();
+
+            expect(this.dynamic.use(stubPlugin)).to.equal(this.dynamic);
+        });
+
+        it('should call the plugin once', function () {
+            var stubPlugin = sinon.stub();
+
+            this.dynamic.use(stubPlugin);
+
+            expect(stubPlugin).to.have.been.calledOnce;
+        });
+
+        it('should pass the Dynamic instance to the plugin', function () {
+            var stubPlugin = sinon.stub();
+
+            this.dynamic.use(stubPlugin);
+
+            expect(stubPlugin).to.have.been.calledWith(this.dynamic);
+        });
+    });
 });
