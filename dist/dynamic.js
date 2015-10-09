@@ -12375,12 +12375,12 @@ module.exports = {
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],3:[function(require,module,exports){
 /*
- * PHP-To-AST - PHP parser
+ * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
- * http://uniter.github.com/phptoast/
+ * https://github.com/asmblah/dynamic
  *
  * Released under the MIT license
- * https://github.com/uniter/phptoast/raw/master/MIT-LICENSE.txt
+ * https://github.com/asmblah/dynamic/raw/master/MIT-LICENSE.txt
  */
 
 'use strict';
