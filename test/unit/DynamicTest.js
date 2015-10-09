@@ -38,7 +38,7 @@ describe('Dynamic', function () {
             expect(this.dynamic.applyTo($('<div></div>'))).to.equal(this.dynamic);
         });
 
-        describe('when an element defines its behaviour via data-* attributes', function () {
+        describe('when an element defines its behaviour using the builtin toggle via data-* attributes', function () {
             beforeEach(function () {
                 this.$body.append(
                     [
@@ -71,7 +71,7 @@ describe('Dynamic', function () {
             });
         });
 
-        describe('when an element defines its behaviour via JSON script block', function () {
+        describe('when an element defines its behaviour using the builtin toggle via JSON script block', function () {
             beforeEach(function () {
                 this.$body.append(
                     [
@@ -140,6 +140,65 @@ describe('Dynamic', function () {
                 expect(function () {
                     this.callApplyTo();
                 }.bind(this)).to.throw('No behaviour called "oh_behave" is defined');
+            });
+        });
+
+        describe('when using data-* attribute config with a custom behaviour', function () {
+            beforeEach(function () {
+                this.$body.append(
+                    [
+                        '<div>',
+                        '<button id="custom_button" data-dyn-on="custom.event" data-dyn-custom="#custom_message">Custom</button>',
+                        '<p id="custom_message">Message to (custom)</p>',
+                        '</div>'
+                    ].join('\n')
+                );
+                this.$message = this.$body.find('#custom_message');
+                this.$customButton = this.$body.find('#custom_button');
+            });
+
+            it('should pass the configured jQuery instance to the handler', function () {
+                var handler = sinon.stub();
+                this.dynamic.addBehaviour('custom', handler);
+                this.callApplyTo();
+
+                this.$customButton.trigger('custom.event');
+
+                expect(handler).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
+            });
+        });
+
+        describe('when using a JSON config with a custom behaviour', function () {
+            beforeEach(function () {
+                this.$body.append(
+                    [
+                        '<div>',
+                        '<button id="custom_button">Custom</button>',
+                        '<p id="custom_message">Message to (custom)</p>',
+                        '<script type="text/x-dyn-json">',
+                        '{',
+                        '    "#custom_button": {',
+                        '        "on": "custom.event",',
+                        '        "behaviour": "custom",',
+                        '        "toggle": "#custom_message"',
+                        '    }',
+                        '}',
+                        '</script>',
+                        '</div>'
+                    ].join('\n')
+                );
+                this.$message = this.$body.find('#custom_message');
+                this.$customButton = this.$body.find('#custom_button');
+            });
+
+            it('should pass the configured jQuery instance to the handler', function () {
+                var handler = sinon.stub();
+                this.dynamic.addBehaviour('custom', handler);
+                this.callApplyTo();
+
+                this.$customButton.trigger('custom.event');
+
+                expect(handler).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
             });
         });
     });

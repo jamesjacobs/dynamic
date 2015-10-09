@@ -46,7 +46,7 @@ _.extend(Dynamic.prototype, {
                     };
 
                 $element.on(onEvent, function () {
-                    handler($element, options, dynamic.$context);
+                    handler($element, options, dynamic.$context, $);
                 });
             });
         });
@@ -71,7 +71,7 @@ _.extend(Dynamic.prototype, {
                     }
 
                     $element.on(onEvent, function () {
-                        handler($element, options, dynamic.$context);
+                        handler($element, options, dynamic.$context, $);
                     });
                 });
             });
