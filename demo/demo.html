@@ -14,10 +14,20 @@
                 font-weight: bold;
             }
 
+            section {
+                display: block;
+            }
+
             .hide {
                 display: none;
             }
         </style>
+
+        <script>
+            // Shim HTML5 elements in old IE
+            document.createElement('section');
+            document.createElement('heading');
+        </script>
     </head>
     <body>
         <h1>Dynamic.js demo</h1>
@@ -65,7 +75,7 @@
         <script src="../node_modules/jquery/dist/jquery.js"></script>
         <script src="../dist/dynamic.js"></script>
         <script>
-            dynamic.create(jQuery).applyTo($('html'));
+            dynamic.create(jQuery).applyTo(jQuery('html'));
         </script>
     </body>
 </html>
