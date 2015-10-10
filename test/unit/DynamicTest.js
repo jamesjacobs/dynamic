@@ -58,6 +58,15 @@ describe('Dynamic', function () {
 
                     expect(this.$message.hasClass('hide')).to.be.false;
                 });
+
+                it('should have triggered one "init" event on the element', function () {
+                    var onInit = sinon.spy();
+                    this.$toggleButton.on('init', onInit);
+
+                    this.callApplyTo();
+
+                    expect(onInit).to.have.been.calledOnce;
+                });
             });
 
             describe('after the event occurs', function () {
@@ -99,6 +108,15 @@ describe('Dynamic', function () {
                     this.callApplyTo();
 
                     expect(this.$message.hasClass('hide')).to.be.false;
+                });
+
+                it('should have triggered one "init" event on the element', function () {
+                    var onInit = sinon.spy();
+                    this.$toggleButton.on('init', onInit);
+
+                    this.callApplyTo();
+
+                    expect(onInit).to.have.been.calledOnce;
                 });
             });
 
