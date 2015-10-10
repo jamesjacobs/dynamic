@@ -12424,6 +12424,8 @@ _.extend(Dynamic.prototype, {
                 $element.on(onEvent, function () {
                     handler($element, options, dynamic.$context, $);
                 });
+
+                $element.trigger('init');
             });
         });
 
@@ -12449,6 +12451,8 @@ _.extend(Dynamic.prototype, {
                     $element.on(onEvent, function () {
                         handler($element, options, dynamic.$context, $);
                     });
+
+                    $element.trigger('init');
                 });
             });
         });
