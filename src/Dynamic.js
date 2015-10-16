@@ -51,8 +51,8 @@ _.extend(Dynamic.prototype, {
                         }
                     };
 
-                $element.on(onEvent, function () {
-                    handler($element, options, dynamic.$context, $);
+                $element.on(onEvent, function (event) {
+                    handler($element, options, dynamic.$context, $, event);
                 });
 
                 $element.trigger('init');
@@ -78,8 +78,8 @@ _.extend(Dynamic.prototype, {
                         throw new Error('No behaviour called "' + elementConfig.behaviour + '" is defined');
                     }
 
-                    $element.on(onEvent, function () {
-                        handler($element, options, dynamic.$context, $);
+                    $element.on(onEvent, function (event) {
+                        handler($element, options, dynamic.$context, $, event);
                     });
 
                     $element.trigger('init');

@@ -185,6 +185,23 @@ describe('Dynamic', function () {
                 expect(handler).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
             });
 
+            it('should pass the event object to the handler', function () {
+                var event = $.Event('custom.event'),
+                    handler = sinon.stub();
+                this.dynamic.addBehaviour('custom', handler);
+                this.callApplyTo();
+
+                this.$customButton.trigger(event);
+
+                expect(handler).to.have.been.calledWith(
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.same(event)
+                );
+            });
+
             it('should namespace additional attributes', function () {
                 this.$customButton.attr('data-dyn-custom-something', 'my value');
                 this.dynamic.addBehaviour('custom', function ($element, options) {
@@ -254,6 +271,23 @@ describe('Dynamic', function () {
                 this.$customButton.trigger('custom.event');
 
                 expect(handler).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
+            });
+
+            it('should pass the event object to the handler', function () {
+                var event = $.Event('custom.event'),
+                    handler = sinon.stub();
+                this.dynamic.addBehaviour('custom', handler);
+                this.callApplyTo();
+
+                this.$customButton.trigger(event);
+
+                expect(handler).to.have.been.calledWith(
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.same(event)
+                );
             });
         });
     });
