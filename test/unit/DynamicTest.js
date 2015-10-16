@@ -198,6 +198,31 @@ describe('Dynamic', function () {
             });
         });
 
+        describe('when using data-* attribute config with a custom behaviour that doesn\'t support a default option', function () {
+            beforeEach(function () {
+                this.$body.append(
+                    [
+                        '<div>',
+                        '<button id="custom_button" data-dyn-custom-on="custom.event">Custom</button>',
+                        '<p id="custom_message">Message to (custom)</p>',
+                        '</div>'
+                    ].join('\n')
+                );
+                this.$message = this.$body.find('#custom_message');
+                this.$customButton = this.$body.find('#custom_button');
+            });
+
+            it('should call the handler', function () {
+                var handler = sinon.stub();
+                this.dynamic.addBehaviour('custom', handler);
+                this.callApplyTo();
+
+                this.$customButton.trigger('custom.event');
+
+                expect(handler).to.have.been.called;
+            });
+        });
+
         describe('when using a JSON config with a custom behaviour', function () {
             beforeEach(function () {
                 this.$body.append(
