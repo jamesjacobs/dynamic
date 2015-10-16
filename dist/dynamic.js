@@ -12414,7 +12414,7 @@ _.extend(Dynamic.prototype, {
         _.each(dynamic.behaviours, function (handler, behaviourName) {
             $container.find('[data-dyn-' + behaviourName + ']').each(function () {
                 var $element = $(this),
-                    onEvent = $element.data('dyn-on'),
+                    onEvent = $element.data('dyn-' + behaviourName + '-on'),
                     options = {
                         get: function (name) {
                             return $element.data('dyn-' + name);
