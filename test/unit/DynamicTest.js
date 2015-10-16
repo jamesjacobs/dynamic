@@ -184,6 +184,18 @@ describe('Dynamic', function () {
 
                 expect(handler).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
             });
+
+            it('should namespace additional attributes', function () {
+                this.$customButton.attr('data-dyn-custom-something', 'my value');
+                this.dynamic.addBehaviour('custom', function ($element, options) {
+                    this.passedOptions = options;
+                }.bind(this));
+                this.callApplyTo();
+
+                this.$customButton.trigger('custom.event');
+
+                expect(this.passedOptions.get('something')).to.equal('my value');
+            });
         });
 
         describe('when using a JSON config with a custom behaviour', function () {

@@ -41,6 +41,12 @@ _.extend(Dynamic.prototype, {
                     onEvent = $element.data('dyn-' + behaviourName + '-on'),
                     options = {
                         get: function (name) {
+                            if (name !== behaviourName) {
+                                // Namespace additional behaviour options,
+                                // so .get('extra') fetches data-dyn-<behav>-extra
+                                name = behaviourName + '-' + name;
+                            }
+
                             return $element.data('dyn-' + name);
                         }
                     };
