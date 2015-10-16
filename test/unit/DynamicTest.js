@@ -43,7 +43,7 @@ describe('Dynamic', function () {
                 this.$body.append(
                     [
                         '<div>',
-                        '<button id="toggler_button" data-dyn-on="custom.event" data-dyn-toggle="#message_to_toggle">Toggle</button>',
+                        '<button id="toggler_button" data-dyn-toggle-on="custom.event" data-dyn-toggle="#message_to_toggle">Toggle</button>',
                         '<p id="message_to_toggle">Message to toggle</p>',
                         '</div>'
                     ].join('\n')
@@ -166,7 +166,7 @@ describe('Dynamic', function () {
                 this.$body.append(
                     [
                         '<div>',
-                        '<button id="custom_button" data-dyn-on="custom.event" data-dyn-custom="#custom_message">Custom</button>',
+                        '<button id="custom_button" data-dyn-custom-on="custom.event" data-dyn-custom="#custom_message">Custom</button>',
                         '<p id="custom_message">Message to (custom)</p>',
                         '</div>'
                     ].join('\n')
