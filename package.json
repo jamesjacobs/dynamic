@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "jquery": "~1",
+    "jsep": "^0.3.0",
     "lodash": "^3.10.0"
   },
   "devDependencies": {
