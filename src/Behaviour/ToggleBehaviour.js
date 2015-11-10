@@ -13,8 +13,10 @@ function ToggleBehaviour() {
 
 }
 
-ToggleBehaviour.prototype.handle = function ($element, options, $context) {
-    $context.find(options.get('toggle')).toggleClass('hide');
+ToggleBehaviour.prototype.handle = function ($element, options) {
+    var $target = options.select('toggle');
+
+    $target.toggleClass('hide');
 };
 
 module.exports = ToggleBehaviour;

@@ -31,7 +31,12 @@ describe('ToggleBehaviour', function () {
         this.event = $.Event('click');
 
         this.options = sinon.createStubInstance(OptionSet);
-        this.options.get.withArgs('toggle').returns('#message_to_toggle');
+        this.options.select.restore();
+        sinon.stub(this.options, 'select', function (name) {
+            if (name === 'toggle') {
+                return this.$targetMessage;
+            }
+        }.bind(this));
 
         this.behaviour = new ToggleBehaviour();
     });
