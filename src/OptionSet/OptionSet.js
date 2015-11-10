@@ -31,15 +31,20 @@ OptionSet.prototype.get = function (name, defaultValue) {
     );
 };
 
-OptionSet.prototype.select = function (name) {
+OptionSet.prototype.select = function (name, $defaultCollection) {
     var optionSet = this,
         selector = optionSet.optionReader.get(
             optionSet.$element,
             name,
             optionSet.behaviourName,
-            undef,
+            $defaultCollection ? null : undef,
             optionSet.options
         );
+
+    // Option is not specified, return the default
+    if (selector === null) {
+        return $defaultCollection;
+    }
 
     return optionSet.selectorEngine.select(optionSet.$element, selector);
 };
