@@ -1027,8 +1027,10 @@ function ToggleBehaviour() {
 
 }
 
-ToggleBehaviour.prototype.handle = function ($element, options, $context) {
-    $context.find(options.get('toggle')).toggleClass('hide');
+ToggleBehaviour.prototype.handle = function ($element, options) {
+    var $target = options.select('toggle');
+
+    $target.toggleClass('hide');
 };
 
 module.exports = ToggleBehaviour;
@@ -1367,15 +1369,20 @@ OptionSet.prototype.get = function (name, defaultValue) {
     );
 };
 
-OptionSet.prototype.select = function (name) {
+OptionSet.prototype.select = function (name, $defaultCollection) {
     var optionSet = this,
         selector = optionSet.optionReader.get(
             optionSet.$element,
             name,
             optionSet.behaviourName,
-            undef,
+            $defaultCollection ? null : undef,
             optionSet.options
         );
+
+    // Option is not specified, return the default
+    if (selector === null) {
+        return $defaultCollection;
+    }
 
     return optionSet.selectorEngine.select(optionSet.$element, selector);
 };
@@ -1426,15 +1433,48 @@ module.exports = OptionSetFactory;
 
 'use strict';
 
+var _ = require('microdash');
+
 function SelectorEngine($context) {
     this.$context = $context;
 }
 
 SelectorEngine.prototype.select = function ($element, selector) {
-    return this.$context.find(selector);
+    var engine = this,
+        functionArgs,
+        functionName,
+        match;
+
+    // Selector starts with an element-relative combinator
+    if (/\s*[+~]/.test(selector)) {
+        return $element.find(selector);
+    }
+
+    // Selector starts with a function
+    match = selector.match(/^\s*@([a-z0-9_-]+)\(([^\)]*)\)/i);
+    if (match) {
+        // Strip function off the selector to leave a (hopefully) valid selector
+        selector = selector.substr(match[0].length).replace(/^\s+|\s+$/, '');
+
+        functionName = match[1];
+        functionArgs = match[2].split(/\s*,\s*/);
+
+        if (!_.isFunction($element[functionName])) {
+            throw new Error('Unsupported selector function "' + match[1] + '"');
+        }
+
+        // Call the jQuery method and use its result as the base
+        $element = $element[functionName].apply($element, functionArgs);
+
+        // If a selector is specified then search relative to the element,
+        // otherwise just return the element
+        return selector !== '' ? $element.find(selector) : $element;
+    }
+
+    return engine.$context.find(selector);
 };
 
 module.exports = SelectorEngine;
 
-},{}]},{},[1])(1)
+},{"microdash":3}]},{},[1])(1)
 });
