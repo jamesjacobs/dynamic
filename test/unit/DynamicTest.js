@@ -11,14 +11,22 @@
 
 var $ = require('jquery'),
     sinon = require('sinon'),
-    Dynamic = require('../../src/Dynamic');
+    Dynamic = require('../../src/Dynamic'),
+    OptionSet = require('../../src/OptionSet/OptionSet'),
+    OptionSetFactory = require('../../src/OptionSet/OptionSetFactory');
 
 describe('Dynamic', function () {
     beforeEach(function () {
         this.$html = $('<html></html>');
         this.$body = $('<body></body>').appendTo(this.$html);
+        this.dataAttributeOptionSet = sinon.createStubInstance(OptionSet);
+        this.objectOptionSet = sinon.createStubInstance(OptionSet);
+        this.dataAttributeOptionSetFactory = sinon.createStubInstance(OptionSetFactory);
+        this.objectOptionSetFactory = sinon.createStubInstance(OptionSetFactory);
+        this.dataAttributeOptionSetFactory.create.returns(this.dataAttributeOptionSet);
+        this.objectOptionSetFactory.create.returns(this.objectOptionSet);
 
-        this.dynamic = new Dynamic($, this.$html);
+        this.dynamic = new Dynamic(this.dataAttributeOptionSetFactory, this.objectOptionSetFactory, $, this.$html);
     });
 
     describe('addBehaviour()', function () {
@@ -36,99 +44,6 @@ describe('Dynamic', function () {
 
         it('should provide a fluent interface', function () {
             expect(this.dynamic.applyTo($('<div></div>'))).to.equal(this.dynamic);
-        });
-
-        describe('when an element defines its behaviour using the builtin toggle via data-* attributes', function () {
-            beforeEach(function () {
-                this.$body.append(
-                    [
-                        '<div>',
-                        '<button id="toggler_button" data-dyn-toggle-on="custom.event" data-dyn-toggle="#message_to_toggle">Toggle</button>',
-                        '<p id="message_to_toggle">Message to toggle</p>',
-                        '</div>'
-                    ].join('\n')
-                );
-                this.$message = this.$body.find('#message_to_toggle');
-                this.$toggleButton = this.$body.find('#toggler_button');
-            });
-
-            describe('before the event occurs', function () {
-                it('should not have added the class "hide" to the message', function () {
-                    this.callApplyTo();
-
-                    expect(this.$message.hasClass('hide')).to.be.false;
-                });
-
-                it('should have triggered one "init" event on the element', function () {
-                    var onInit = sinon.spy();
-                    this.$toggleButton.on('init', onInit);
-
-                    this.callApplyTo();
-
-                    expect(onInit).to.have.been.calledOnce;
-                });
-            });
-
-            describe('after the event occurs', function () {
-                it('should have added the class "hide" to the message', function () {
-                    this.callApplyTo();
-
-                    this.$toggleButton.trigger('custom.event');
-
-                    expect(this.$message.hasClass('hide')).to.be.true;
-                });
-            });
-        });
-
-        describe('when an element defines its behaviour using the builtin toggle via JSON script block', function () {
-            beforeEach(function () {
-                this.$body.append(
-                    [
-                        '<div>',
-                        '<button id="toggler_button">Toggle</button>',
-                        '<p id="a_message_to_toggle">Message to toggle</p>',
-                        '<script type="text/x-dyn-json">',
-                        '{',
-                        '    "#toggler_button": {',
-                        '        "on": "custom.event",',
-                        '        "behaviour": "toggle",',
-                        '        "toggle": "#a_message_to_toggle"',
-                        '    }',
-                        '}',
-                        '</script>',
-                        '</div>'
-                    ].join('\n')
-                );
-                this.$message = this.$body.find('#a_message_to_toggle');
-                this.$toggleButton = this.$body.find('#toggler_button');
-            });
-
-            describe('before the event occurs', function () {
-                it('should not have added the class "hide" to the message', function () {
-                    this.callApplyTo();
-
-                    expect(this.$message.hasClass('hide')).to.be.false;
-                });
-
-                it('should have triggered one "init" event on the element', function () {
-                    var onInit = sinon.spy();
-                    this.$toggleButton.on('init', onInit);
-
-                    this.callApplyTo();
-
-                    expect(onInit).to.have.been.calledOnce;
-                });
-            });
-
-            describe('after the event occurs', function () {
-                it('should have added the class "hide" to the message', function () {
-                    this.callApplyTo();
-
-                    this.$toggleButton.trigger('custom.event');
-
-                    expect(this.$message.hasClass('hide')).to.be.true;
-                });
-            });
         });
 
         describe('when using a JSON config and the behaviour is not defined', function () {
@@ -175,43 +90,46 @@ describe('Dynamic', function () {
                 this.$customButton = this.$body.find('#custom_button');
             });
 
-            it('should pass the configured jQuery instance to the handler', function () {
-                var handler = sinon.stub();
-                this.dynamic.addBehaviour('custom', handler);
-                this.callApplyTo();
+            describe('before the event occurs', function () {
+                it('should have triggered one "init" event on the element', function () {
+                    var handler = sinon.stub(),
+                        onInit = sinon.spy();
+                    this.dynamic.addBehaviour('custom', handler);
+                    this.$customButton.on('init', onInit);
 
-                this.$customButton.trigger('custom.event');
+                    this.callApplyTo();
 
-                expect(handler).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
+                    expect(onInit).to.have.been.calledOnce;
+                });
             });
 
-            it('should pass the event object to the handler', function () {
-                var event = $.Event('custom.event'),
-                    handler = sinon.stub();
-                this.dynamic.addBehaviour('custom', handler);
-                this.callApplyTo();
+            describe('after the event occurs', function () {
+                it('should pass the configured jQuery instance to the handler', function () {
+                    var handler = sinon.stub();
+                    this.dynamic.addBehaviour('custom', handler);
+                    this.callApplyTo();
 
-                this.$customButton.trigger(event);
+                    this.$customButton.trigger('custom.event');
 
-                expect(handler).to.have.been.calledWith(
-                    sinon.match.any,
-                    sinon.match.any,
-                    sinon.match.any,
-                    sinon.match.any,
-                    sinon.match.same(event)
-                );
-            });
+                    expect(handler).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
+                });
 
-            it('should namespace additional attributes', function () {
-                this.$customButton.attr('data-dyn-custom-something', 'my value');
-                this.dynamic.addBehaviour('custom', function ($element, options) {
-                    this.passedOptions = options;
-                }.bind(this));
-                this.callApplyTo();
+                it('should pass the event object to the handler', function () {
+                    var event = $.Event('custom.event'),
+                        handler = sinon.stub();
+                    this.dynamic.addBehaviour('custom', handler);
+                    this.callApplyTo();
 
-                this.$customButton.trigger('custom.event');
+                    this.$customButton.trigger(event);
 
-                expect(this.passedOptions.get('something')).to.equal('my value');
+                    expect(handler).to.have.been.calledWith(
+                        sinon.match.any,
+                        sinon.match.any,
+                        sinon.match.any,
+                        sinon.match.any,
+                        sinon.match.same(event)
+                    );
+                });
             });
         });
 

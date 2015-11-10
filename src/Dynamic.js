@@ -9,17 +9,14 @@
 
 'use strict';
 
-var _ = require('lodash');
+var _ = require('microdash');
 
-function Dynamic($, $context) {
+function Dynamic(dataAttributeOptionSetFactory, objectOptionSetFactory, $, $context) {
     this.$ = $;
-    this.behaviours = {
-        // Default toggle behaviour: toggles the class "hide" on and off
-        'toggle': function ($element, options, $context) {
-            $context.find(options.get('toggle')).toggleClass('hide');
-        }
-    };
+    this.behaviours = {};
     this.$context = $context;
+    this.dataAttributeOptionSetFactory = dataAttributeOptionSetFactory;
+    this.objectOptionSetFactory = objectOptionSetFactory;
 }
 
 _.extend(Dynamic.prototype, {
@@ -39,17 +36,10 @@ _.extend(Dynamic.prototype, {
             $container.find('[data-dyn-' + behaviourName + '-on]').each(function () {
                 var $element = $(this),
                     onEvent = $element.data('dyn-' + behaviourName + '-on'),
-                    options = {
-                        get: function (name) {
-                            if (name !== behaviourName) {
-                                // Namespace additional behaviour options,
-                                // so .get('extra') fetches data-dyn-<behav>-extra
-                                name = behaviourName + '-' + name;
-                            }
-
-                            return $element.data('dyn-' + name);
-                        }
-                    };
+                    options = dynamic.dataAttributeOptionSetFactory.create(
+                        behaviourName,
+                        $element
+                    );
 
                 $element.on(onEvent, function (event) {
                     handler($element, options, dynamic.$context, $, event);
@@ -67,15 +57,17 @@ _.extend(Dynamic.prototype, {
                 $container.find(selector).each(function () {
                     var $element = $(this),
                         onEvent = elementConfig.on,
-                        options = {
-                            get: function (name) {
-                                return elementConfig[name];
-                            }
-                        },
+                        options = dynamic.objectOptionSetFactory.create(
+                            elementConfig.behaviour,
+                            $element,
+                            elementConfig
+                        ),
                         handler = dynamic.behaviours[elementConfig.behaviour];
 
                     if (!handler) {
-                        throw new Error('No behaviour called "' + elementConfig.behaviour + '" is defined');
+                        throw new Error(
+                            'No behaviour called "' + elementConfig.behaviour + '" is defined'
+                        );
                     }
 
                     $element.on(onEvent, function (event) {

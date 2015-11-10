@@ -10,7 +10,6 @@
 'use strict';
 
 var $ = require('jquery'),
-    undef,
     ObjectOptionReader = require('../../../src/OptionSet/ObjectOptionReader');
 
 describe('ObjectOptionReader', function () {

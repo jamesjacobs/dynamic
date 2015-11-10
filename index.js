@@ -9,10 +9,56 @@
 
 'use strict';
 
-var Dynamic = require('./src/Dynamic');
+var jsep = require('jsep'),
+    CodeGenerator = require('./src/CodeGenerator'),
+    Dynamic = require('./src/Dynamic'),
+    DataAttributeOptionReader = require('./src/OptionSet/DataAttributeOptionReader'),
+    ExpressionEvaluator = require('./src/ExpressionEvaluator'),
+    ObjectOptionReader = require('./src/OptionSet/ObjectOptionReader'),
+    OptionReader = require('./src/OptionSet/OptionReader'),
+    OptionSet = require('./src/OptionSet/OptionSet'),
+    OptionSetFactory = require('./src/OptionSet/OptionSetFactory'),
+    SelectorEngine = require('./src/SelectorEngine'),
+    ToggleBehaviour = require('./src/Behaviour/ToggleBehaviour');
 
 module.exports = {
     create: function ($) {
-        return new Dynamic($, $('html'));
+        var $context = $('html'),
+            expressionContext = {$: $},
+            codeGenerator = new CodeGenerator(),
+            expressionEvaluator = new ExpressionEvaluator(jsep, codeGenerator),
+            dataAttributeOptionReader = new OptionReader(
+                new DataAttributeOptionReader(),
+                expressionContext,
+                expressionEvaluator
+            ),
+            objectOptionReader = new OptionReader(
+                new ObjectOptionReader(),
+                expressionContext,
+                expressionEvaluator
+            ),
+            selectorEngine = new SelectorEngine($context),
+            dataAttributeOptionSetFactory = new OptionSetFactory(
+                OptionSet,
+                dataAttributeOptionReader,
+                selectorEngine
+            ),
+            objectOptionSetFactory = new OptionSetFactory(
+                OptionSet,
+                objectOptionReader,
+                selectorEngine
+            ),
+            dynamic = new Dynamic(
+                dataAttributeOptionSetFactory,
+                objectOptionSetFactory,
+                $,
+                $context
+            ),
+            toggleBehaviour = new ToggleBehaviour();
+
+        // Add the default 'toggle' behaviour
+        dynamic.addBehaviour('toggle', $.proxy(toggleBehaviour.handle, toggleBehaviour));
+
+        return dynamic;
     }
 };
