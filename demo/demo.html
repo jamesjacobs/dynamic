@@ -47,6 +47,20 @@
         </section>
 
         <section>
+            <heading>I toggle the message's display via a data attribute and a selector function</heading>
+            <label>
+                On
+                <input type="radio" name="toggle_radio_data" value="on" data-dyn-toggle-on="change" data-dyn-toggle="@closest(section) > #toggle_message_data" checked>
+            </label>
+            <label>
+                Off
+                <input type="radio" name="toggle_radio_data" value="off" data-dyn-toggle-on="change" data-dyn-toggle="@closest(section) > #toggle_message_data">
+            </label>
+
+            <p id="toggle_message_data">I am toggled on!</p>
+        </section>
+
+        <section>
             <heading>I toggle the message's display via a JSON config</heading>
             <div>
                 <label>
