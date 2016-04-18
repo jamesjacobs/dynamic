@@ -1168,28 +1168,36 @@ _.extend(Dynamic.prototype, {
                 config = $.parseJSON(json);
 
             _.forOwn(config, function (elementConfig, selector) {
-                $container.find(selector).each(function () {
-                    var $element = $(this),
-                        onEvent = elementConfig.on,
-                        options = dynamic.objectOptionSetFactory.create(
-                            elementConfig.behaviour,
-                            $element,
-                            elementConfig
-                        ),
-                        handler = dynamic.behaviours[elementConfig.behaviour];
+                function handleConfig(elementConfig) {
+                    $container.find(selector).each(function () {
+                        var $element = $(this),
+                            onEvent = elementConfig.on,
+                            options = dynamic.objectOptionSetFactory.create(
+                                elementConfig.behaviour,
+                                $element,
+                                elementConfig
+                            ),
+                            handler = dynamic.behaviours[elementConfig.behaviour];
 
-                    if (!handler) {
-                        throw new Error(
-                            'No behaviour called "' + elementConfig.behaviour + '" is defined'
-                        );
-                    }
+                        if (!handler) {
+                            throw new Error(
+                                'No behaviour called "' + elementConfig.behaviour + '" is defined'
+                            );
+                        }
 
-                    $element.on(onEvent, function (event) {
-                        handler($element, options, dynamic.$context, $, event);
+                        $element.on(onEvent, function (event) {
+                            handler($element, options, dynamic.$context, $, event);
+                        });
+
+                        $element.trigger('init');
                     });
+                }
 
-                    $element.trigger('init');
-                });
+                if (_.isArray(elementConfig)) {
+                    _.each(elementConfig, handleConfig);
+                } else {
+                    handleConfig(elementConfig);
+                }
             });
         });
 
