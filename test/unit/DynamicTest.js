@@ -208,6 +208,83 @@ describe('Dynamic', function () {
                 );
             });
         });
+
+        describe('when using a JSON config with multiple behaviours for one selector', function () {
+            beforeEach(function () {
+                this.$body.append(
+                    [
+                        '<div>',
+                        '<button id="custom_button">Custom</button>',
+                        '<p id="custom_message1">Message to (custom) 1</p>',
+                        '<p id="custom_message2">Message to (custom) 2</p>',
+                        '<script type="text/x-dyn-json">',
+                        '{',
+                        '    "#custom_button": [{',
+                        '        "on": "custom.event1",',
+                        '        "behaviour": "custom1",',
+                        '        "toggle": "#custom_message1"',
+                        '    }, {',
+                        '        "on": "custom.event2",',
+                        '        "behaviour": "custom2",',
+                        '        "toggle": "#custom_message2"',
+                        '    }]',
+                        '}',
+                        '</script>',
+                        '</div>'
+                    ].join('\n')
+                );
+                this.$message = this.$body.find('#custom_message');
+                this.$customButton = this.$body.find('#custom_button');
+
+                this.handler1 = sinon.stub();
+                this.handler2 = sinon.stub();
+                this.dynamic.addBehaviour('custom1', this.handler1);
+                this.dynamic.addBehaviour('custom2', this.handler2);
+                this.callApplyTo();
+            });
+
+            it('should pass the configured jQuery instance to the first handler', function () {
+                this.$customButton.trigger('custom.event1');
+
+                expect(this.handler1).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
+                expect(this.handler2).not.to.have.been.called;
+            });
+
+            it('should pass the configured jQuery instance to the second handler', function () {
+                this.$customButton.trigger('custom.event2');
+
+                expect(this.handler1).not.to.have.been.called;
+                expect(this.handler2).to.have.been.calledWith(sinon.match.any, sinon.match.any, sinon.match.any, $);
+            });
+
+            it('should pass the event object to the first handler', function () {
+                var event = $.Event('custom.event1');
+
+                this.$customButton.trigger(event);
+
+                expect(this.handler1).to.have.been.calledWith(
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.same(event)
+                );
+            });
+
+            it('should pass the event object to the second handler', function () {
+                var event = $.Event('custom.event2');
+
+                this.$customButton.trigger(event);
+
+                expect(this.handler2).to.have.been.calledWith(
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.any,
+                    sinon.match.same(event)
+                );
+            });
+        });
     });
 
     describe('use()', function () {
