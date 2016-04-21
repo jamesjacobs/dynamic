@@ -22,7 +22,7 @@ SelectorEngine.prototype.select = function ($element, selector) {
         match;
 
     // Selector starts with an element-relative combinator
-    if (/\s*[+~]/.test(selector)) {
+    if (/^\s*[+~>]/.test(selector)) {
         return $element.find(selector);
     }
 

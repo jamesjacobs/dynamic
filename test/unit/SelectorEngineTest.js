@@ -55,6 +55,13 @@ describe('SelectorEngine', function () {
             expect($result.is(this.$pElement, this.$pElement2)).to.be.true;
         });
 
+        it('should support a simple ">" combinator relative to the element', function () {
+            var $result = this.engine.select(this.$element, '> #iElement');
+
+            expect($result).to.have.length(1);
+            expect($result.is(this.$iElement)).to.be.true;
+        });
+
         describe('function support', function () {
             it('should support the @closest(...) function used alone', function () {
                 var $result = this.engine.select(this.$iElement, '@closest(div)');
