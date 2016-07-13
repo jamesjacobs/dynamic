@@ -40,11 +40,13 @@ module.exports = {
             ),
             selectorEngine = new SelectorEngine($context),
             dataAttributeOptionSetFactory = new OptionSetFactory(
+                $,
                 OptionSet,
                 dataAttributeOptionReader,
                 selectorEngine
             ),
             objectOptionSetFactory = new OptionSetFactory(
+                $,
                 OptionSet,
                 objectOptionReader,
                 selectorEngine
