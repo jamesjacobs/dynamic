@@ -9,7 +9,8 @@
 
 'use strict';
 
-function OptionSetFactory(OptionSet, optionReader, selectorEngine) {
+function OptionSetFactory($, OptionSet, optionReader, selectorEngine) {
+    this.$ = $;
     this.optionReader = optionReader;
     this.OptionSet = OptionSet;
     this.selectorEngine = selectorEngine;
@@ -19,6 +20,7 @@ OptionSetFactory.prototype.create = function (behaviourName, $element, elementCo
     var factory = this;
 
     return new factory.OptionSet(
+        factory.$,
         factory.optionReader,
         factory.selectorEngine,
         behaviourName,

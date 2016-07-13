@@ -28,6 +28,7 @@ describe('OptionSet', function () {
         this.optionReader.get.withArgs(this.$element, 'my-selector').returns('#mySelector');
 
         this.optionSet = new OptionSet(
+            $,
             this.optionReader,
             this.selectorEngine,
             'my-behaviour',
@@ -52,7 +53,7 @@ describe('OptionSet', function () {
         it('should pass through a collection without using the SelectorEngine', function () {
             var $result = $('<div></div>');
 
-            this.selectorEngine.select.withArgs(this.$element, '#mySelector').returns($result);
+            this.optionReader.get.withArgs(this.$element, 'my-selector').returns($result);
 
             expect(this.optionSet.select('my-selector')).to.equal($result);
         });

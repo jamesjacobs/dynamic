@@ -11,7 +11,8 @@
 
 var undef;
 
-function OptionSet(optionReader, selectorEngine, behaviourName, $element, options) {
+function OptionSet($, optionReader, selectorEngine, behaviourName, $element, options) {
+    this.$ = $;
     this.behaviourName = behaviourName;
     this.$element = $element;
     this.optionReader = optionReader;
@@ -44,6 +45,11 @@ OptionSet.prototype.select = function (name, $defaultCollection) {
     // Option is not specified, return the default
     if (selector === null) {
         return $defaultCollection;
+    }
+
+    // Option was an expression that has returned a collection, no selector to process
+    if (selector instanceof optionSet.$) {
+        return selector;
     }
 
     return optionSet.selectorEngine.select(optionSet.$element, selector);
