@@ -53,15 +53,28 @@ describe('CodeGenerator', function () {
                                 'raw': '21'
                             },
                             'right': {
-                                'type': 'MemberExpression',
-                                'computed': false,
-                                'object': {
-                                    'type': 'Identifier',
-                                    'name': 'a'
+                                'type': 'ConditionalExpression',
+                                'test': {
+                                    'type': 'MemberExpression',
+                                    'computed': false,
+                                    'object': {
+                                        'type': 'Identifier',
+                                        'name': 'a'
+                                    },
+                                    'property': {
+                                        'type': 'Identifier',
+                                        'name': 'b'
+                                    }
                                 },
-                                'property': {
-                                    'type': 'Identifier',
-                                    'name': 'b'
+                                'consequent': {
+                                    'type': 'Literal',
+                                    'value': 10,
+                                    'raw': '10'
+                                },
+                                'alternate': {
+                                    'type': 'Literal',
+                                    'value': 14,
+                                    'raw': '14'
                                 }
                             }
                         },
@@ -105,7 +118,7 @@ describe('CodeGenerator', function () {
                 }
             };
 
-            expect(this.generator.generate(ast)).to.equal('((((21 + context.a.b) + context.c[context.d]) + !context.e) + [22, 23])');
+            expect(this.generator.generate(ast)).to.equal('((((21 + (context.a.b ? 10 : 14)) + context.c[context.d]) + !context.e) + [22, 23])');
         });
     });
 });

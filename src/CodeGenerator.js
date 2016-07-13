@@ -66,6 +66,13 @@ CodeGenerator.prototype.generate = function (ast) {
 
             return 'context.' + node.name;
         }
+
+        if (node.type === 'ConditionalExpression') {
+            return '(' + generateFrom(node.test, node) + ' ? ' +
+                generateFrom(node.consequent, node) + ' : ' +
+                generateFrom(node.alternate, node) +
+                ')';
+        }
     }
 
     return generateFrom(ast);
