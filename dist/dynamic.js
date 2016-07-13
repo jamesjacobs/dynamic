@@ -1104,6 +1104,13 @@ CodeGenerator.prototype.generate = function (ast) {
 
             return 'context.' + node.name;
         }
+
+        if (node.type === 'ConditionalExpression') {
+            return '(' + generateFrom(node.test, node) + ' ? ' +
+                generateFrom(node.consequent, node) + ' : ' +
+                generateFrom(node.alternate, node) +
+                ')';
+        }
     }
 
     return generateFrom(ast);
@@ -1454,7 +1461,7 @@ SelectorEngine.prototype.select = function ($element, selector) {
         match;
 
     // Selector starts with an element-relative combinator
-    if (/\s*[+~]/.test(selector)) {
+    if (/^\s*[+~>]/.test(selector)) {
         return $element.find(selector);
     }
 
