@@ -23,8 +23,8 @@ var jsep = require('jsep'),
     ToggleBehaviour = require('./src/Behaviour/ToggleBehaviour');
 
 module.exports = {
-    create: function ($) {
-        var $context = $('html'),
+    create: function ($, $root) {
+        var $context = $root || $('html'),
             expressionContext = {$: $},
             codeGenerator = new CodeGenerator(),
             expressionEvaluator = new ExpressionEvaluator(jsep, codeGenerator),
