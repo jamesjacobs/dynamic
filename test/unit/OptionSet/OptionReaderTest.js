@@ -11,7 +11,6 @@
 
 var $ = require('jquery'),
     sinon = require('sinon'),
-    ExpressionEvaluator = require('../../../src/ExpressionEvaluator'),
     ObjectOptionReader = require('../../../src/OptionSet/ObjectOptionReader'),
     OptionReader = require('../../../src/OptionSet/OptionReader');
 
@@ -21,12 +20,46 @@ describe('OptionReader', function () {
         this.expressionContext = {
             myArg: 21
         };
-        this.expressionEvaluator = sinon.createStubInstance(ExpressionEvaluator);
+        this.eval = sinon.stub();
+        this.parse = sinon.stub();
+        this.expressionEvaluator = {
+            eval: this.eval,
+            parse: this.parse
+        };
         this.optionReader = sinon.createStubInstance(ObjectOptionReader);
         this.optionReader.get.withArgs(sinon.match.any, 'my-behaviour', 'my-behaviour').returns('root value');
         this.optionReader.get.withArgs(sinon.match.any, 'arg1', 'my-behaviour').returns('value of arg1');
         this.optionReader.get.withArgs(sinon.match.any, 'arg2', 'my-behaviour').returns('value of arg2');
-        this.optionReader.get.withArgs(sinon.match.any, 'evaled-arg-expr', 'my-behaviour').returns('my.expr === 2');
+        this.optionReader.get.withArgs(sinon.match.any, 'evaled-arg-expr', 'my-behaviour').returns('1 + 2');
+
+        this.parse.withArgs('1 + 2').returns({
+            type: 'BinaryExpression',
+            operator: '+',
+            left: {
+                type: 'Literal',
+                value: 1,
+                raw: '1'
+            },
+            right: {
+                type: 'Literal',
+                value: 2,
+                raw: '2'
+            }
+        });
+        this.eval.withArgs({
+            type: 'BinaryExpression',
+            operator: '+',
+            left: {
+                type: 'Literal',
+                value: 1,
+                raw: '1'
+            },
+            right: {
+                type: 'Literal',
+                value: 2,
+                raw: '2'
+            }
+        }).returns(3);
 
         this.reader = new OptionReader(this.optionReader, this.expressionContext, this.expressionEvaluator);
     });
@@ -41,27 +74,31 @@ describe('OptionReader', function () {
         });
 
         it('should support evaluated expressions', function () {
-            this.expressionEvaluator.evaluate.withArgs('my.expr === 2').returns('my evaled result');
-
-            expect(this.reader.get(this.$element, 'evaled-arg', 'my-behaviour')).to.equal('my evaled result');
+            expect(this.reader.get(this.$element, 'evaled-arg', 'my-behaviour')).to.equal(3);
         });
 
         it('should pass the context to the evaluator', function () {
-            this.expressionEvaluator.evaluate.returns('my evaled result');
+            this.expressionEvaluator.eval.returns('my evaled result');
 
             this.reader.get(this.$element, 'evaled-arg', 'my-behaviour');
 
-            expect(this.expressionEvaluator.evaluate)
-                .to.have.been.calledWith('my.expr === 2', sinon.match({myArg: 21}));
+            expect(this.expressionEvaluator.eval).to.have.been.calledOnce;
+            expect(this.expressionEvaluator.eval).to.have.been.calledWith(
+                sinon.match.any,
+                sinon.match({myArg: 21})
+            );
         });
 
         it('should pass the element in the context as $this', function () {
-            this.expressionEvaluator.evaluate.returns('my evaled result');
+            this.expressionEvaluator.eval.returns('my evaled result');
 
             this.reader.get(this.$element, 'evaled-arg', 'my-behaviour');
 
-            expect(this.expressionEvaluator.evaluate)
-                .to.have.been.calledWith('my.expr === 2', sinon.match({'$this': this.$element}));
+            expect(this.expressionEvaluator.eval).to.have.been.calledOnce;
+            expect(this.expressionEvaluator.eval).to.have.been.calledWith(
+                sinon.match.any,
+                sinon.match({'$this': this.$element})
+            );
         });
 
         it('should return the default when specified and neither the arg nor its expression variant are present', function () {

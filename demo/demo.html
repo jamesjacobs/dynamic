@@ -50,14 +50,40 @@
             <heading>I toggle the message's display via a data attribute and a selector function</heading>
             <label>
                 On
-                <input type="radio" name="toggle_radio_data" value="on" data-dyn-toggle-on="change" data-dyn-toggle="@closest(section) > #toggle_message_data" checked>
+                <input type="radio" name="toggle_radio_data_with_fn" value="on" data-dyn-toggle-on="change" data-dyn-toggle="@closest(section) > #toggle_message_data_with_fn" checked>
             </label>
             <label>
                 Off
-                <input type="radio" name="toggle_radio_data" value="off" data-dyn-toggle-on="change" data-dyn-toggle="@closest(section) > #toggle_message_data">
+                <input type="radio" name="toggle_radio_data_with_fn" value="off" data-dyn-toggle-on="change" data-dyn-toggle="@closest(section) > #toggle_message_data_with_fn">
             </label>
 
-            <p id="toggle_message_data">I am toggled on!</p>
+            <p id="toggle_message_data_with_fn">I am toggled on!</p>
+        </section>
+
+        <section>
+            <heading>I toggle the messages' displays via a data attribute with expression</heading>
+            <p>
+                <label>
+                    First
+                    <input type="radio" name="toggle_radio_data_with_expr_which" value="1" checked>
+                </label>
+                <label>
+                    Second
+                    <input type="radio" name="toggle_radio_data_with_expr_which" value="2">
+                </label>
+            </p>
+
+            <p>
+                <button
+                    data-dyn-toggle-on="click"
+                    data-dyn-toggle-toggle-expr="$('#toggle_message_data_with_expr_' + $('[name=toggle_radio_data_with_expr_which]:checked').val())"
+                >
+                    Toggle
+                </button>
+            </p>
+
+            <p id="toggle_message_data_with_expr_1">[First] I am toggled on!</p>
+            <p id="toggle_message_data_with_expr_2">[Second] I am toggled on!</p>
         </section>
 
         <section>
