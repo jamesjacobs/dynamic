@@ -9,11 +9,9 @@
 
 'use strict';
 
-var jsep = require('jsep'),
-    CodeGenerator = require('./src/CodeGenerator'),
+var expressionEvaluator = require('expression-eval'),
     Dynamic = require('./src/Dynamic'),
     DataAttributeOptionReader = require('./src/OptionSet/DataAttributeOptionReader'),
-    ExpressionEvaluator = require('./src/ExpressionEvaluator'),
     ObjectOptionReader = require('./src/OptionSet/ObjectOptionReader'),
     OptionReader = require('./src/OptionSet/OptionReader'),
     OptionSet = require('./src/OptionSet/OptionSet'),
@@ -25,8 +23,6 @@ module.exports = {
     create: function ($, $root) {
         var $context = $root || $('html'),
             expressionContext = {$: $},
-            codeGenerator = new CodeGenerator(),
-            expressionEvaluator = new ExpressionEvaluator(jsep, codeGenerator),
             dataAttributeOptionReader = new OptionReader(
                 new DataAttributeOptionReader(),
                 expressionContext,

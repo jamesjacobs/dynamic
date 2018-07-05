@@ -22,7 +22,8 @@ OptionReader.prototype.get = function ($element, name, behaviourName, defaultVal
     var reader = this,
         expressionContext,
         value = reader.optionReader.get($element, name, behaviourName, elementConfig),
-        valueExpression;
+        valueExpression,
+        valueExpressionAST;
 
     if (value === undef) {
         valueExpression = reader.optionReader.get($element, name + '-expr', behaviourName, elementConfig);
@@ -39,7 +40,9 @@ OptionReader.prototype.get = function ($element, name, behaviourName, defaultVal
             '$this': $element
         });
 
-        value = reader.expressionEvaluator.evaluate(valueExpression, expressionContext);
+        valueExpressionAST = reader.expressionEvaluator.parse(valueExpression);
+
+        value = reader.expressionEvaluator.eval(valueExpressionAST, expressionContext);
     }
 
     return value;
