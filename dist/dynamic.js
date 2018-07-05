@@ -10,11 +10,9 @@
 
 'use strict';
 
-var jsep = require('jsep'),
-    CodeGenerator = require('./src/CodeGenerator'),
+var expressionEvaluator = require('expression-eval'),
     Dynamic = require('./src/Dynamic'),
     DataAttributeOptionReader = require('./src/OptionSet/DataAttributeOptionReader'),
-    ExpressionEvaluator = require('./src/ExpressionEvaluator'),
     ObjectOptionReader = require('./src/OptionSet/ObjectOptionReader'),
     OptionReader = require('./src/OptionSet/OptionReader'),
     OptionSet = require('./src/OptionSet/OptionSet'),
@@ -26,8 +24,6 @@ module.exports = {
     create: function ($, $root) {
         var $context = $root || $('html'),
             expressionContext = {$: $},
-            codeGenerator = new CodeGenerator(),
-            expressionEvaluator = new ExpressionEvaluator(jsep, codeGenerator),
             dataAttributeOptionReader = new OptionReader(
                 new DataAttributeOptionReader(),
                 expressionContext,
@@ -66,7 +62,120 @@ module.exports = {
     }
 };
 
-},{"./src/Behaviour/ToggleBehaviour":17,"./src/CodeGenerator":18,"./src/Dynamic":19,"./src/ExpressionEvaluator":20,"./src/OptionSet/DataAttributeOptionReader":21,"./src/OptionSet/ObjectOptionReader":22,"./src/OptionSet/OptionReader":23,"./src/OptionSet/OptionSet":24,"./src/OptionSet/OptionSetFactory":25,"./src/SelectorEngine":26,"jsep":2}],2:[function(require,module,exports){
+},{"./src/Behaviour/ToggleBehaviour":18,"./src/Dynamic":19,"./src/OptionSet/DataAttributeOptionReader":20,"./src/OptionSet/ObjectOptionReader":21,"./src/OptionSet/OptionReader":22,"./src/OptionSet/OptionSet":23,"./src/OptionSet/OptionSetFactory":24,"./src/SelectorEngine":25,"expression-eval":2}],2:[function(require,module,exports){
+var jsep = require('jsep');
+
+/**
+ * Evaluation code from JSEP project, under MIT License.
+ * Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
+ */
+
+var binops = {
+  '||':  function (a, b) { return a || b; },
+  '&&':  function (a, b) { return a && b; },
+  '|':   function (a, b) { return a | b; },
+  '^':   function (a, b) { return a ^ b; },
+  '&':   function (a, b) { return a & b; },
+  '==':  function (a, b) { return a == b; }, // jshint ignore:line
+  '!=':  function (a, b) { return a != b; }, // jshint ignore:line
+  '===': function (a, b) { return a === b; },
+  '!==': function (a, b) { return a !== b; },
+  '<':   function (a, b) { return a < b; },
+  '>':   function (a, b) { return a > b; },
+  '<=':  function (a, b) { return a <= b; },
+  '>=':  function (a, b) { return a >= b; },
+  '<<':  function (a, b) { return a << b; },
+  '>>':  function (a, b) { return a >> b; },
+  '>>>': function (a, b) { return a >>> b; },
+  '+':   function (a, b) { return a + b; },
+  '-':   function (a, b) { return a - b; },
+  '*':   function (a, b) { return a * b; },
+  '/':   function (a, b) { return a / b; },
+  '%':   function (a, b) { return a % b; }
+};
+
+var unops = {
+  '-' :  function (a) { return -a; },
+  '+' :  function (a) { return a; },
+  '~' :  function (a) { return ~a; },
+  '!' :  function (a) { return !a; },
+};
+
+function evaluateArray ( list, context ) {
+  return list.map(function (v) { return evaluate(v, context); });
+}
+
+function evaluateMember ( node, context ) {
+  var object = evaluate(node.object, context);
+  if ( node.computed ) {
+    return [object, object[evaluate(node.property, context)]];
+  } else {
+    return [object, object[node.property.name]];
+  }
+}
+
+function evaluate ( node, context ) {
+
+  switch ( node.type ) {
+
+    case 'ArrayExpression':
+      return evaluateArray( node.elements, context );
+
+    case 'BinaryExpression':
+      return binops[ node.operator ]( evaluate( node.left, context ), evaluate( node.right, context ) );
+
+    case 'CallExpression':
+      var caller, fn, assign;
+      if (node.callee.type === 'MemberExpression') {
+        assign = evaluateMember( node.callee, context );
+        caller = assign[0];
+        fn = assign[1];
+      } else {
+        fn = evaluate( node.callee, context );
+      }
+      if (typeof fn  !== 'function') { return undefined; }
+      return fn.apply( caller, evaluateArray( node.arguments, context ) );
+
+    case 'ConditionalExpression':
+      return evaluate( node.test, context )
+        ? evaluate( node.consequent, context )
+        : evaluate( node.alternate, context );
+
+    case 'Identifier':
+      return context[node.name];
+
+    case 'Literal':
+      return node.value;
+
+    case 'LogicalExpression':
+      return binops[ node.operator ]( evaluate( node.left, context ), evaluate( node.right, context ) );
+
+    case 'MemberExpression':
+      return evaluateMember(node, context)[1];
+
+    case 'ThisExpression':
+      return context;
+
+    case 'UnaryExpression':
+      return unops[ node.operator ]( evaluate( node.argument, context ) );
+
+    default:
+      return undefined;
+  }
+
+}
+
+function compile (expression) {
+  return evaluate.bind(null, jsep(expression));
+}
+
+module.exports = {
+  parse: jsep,
+  eval: evaluate,
+  compile: compile
+};
+
+},{"jsep":3}],3:[function(require,module,exports){
 //     JavaScript Expression Parser (JSEP) 0.3.0
 //     JSEP may be freely distributed under the MIT License
 //     http://jsep.from.so/
@@ -686,7 +795,7 @@ module.exports = {
 	}
 }(this));
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -726,7 +835,7 @@ module.exports = {
     map: map
 };
 
-},{"./src/each":4,"./src/escapeRegExp":5,"./src/extend":6,"./src/filter":7,"./src/forOwn":8,"./src/isArray":10,"./src/isBoolean":11,"./src/isFunction":12,"./src/isNumber":13,"./src/isPlainObject":14,"./src/isString":15,"./src/map":16}],4:[function(require,module,exports){
+},{"./src/each":5,"./src/escapeRegExp":6,"./src/extend":7,"./src/filter":8,"./src/forOwn":9,"./src/isArray":11,"./src/isBoolean":12,"./src/isFunction":13,"./src/isNumber":14,"./src/isPlainObject":15,"./src/isString":16,"./src/map":17}],5:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -769,7 +878,7 @@ module.exports = function (object, iterator, thisArg) {
     }
 };
 
-},{"./isArray":10}],5:[function(require,module,exports){
+},{"./isArray":11}],6:[function(require,module,exports){
 'use strict';
 
 var REGEX = /[|\\{}()[\]^$+*?.]/g;
@@ -783,7 +892,7 @@ module.exports = function (string) {
     return string.replace(REGEX,  '\\$&');
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -810,7 +919,7 @@ module.exports = function (object) {
     return object;
 };
 
-},{"./each":4,"./forOwn":8}],7:[function(require,module,exports){
+},{"./each":5,"./forOwn":9}],8:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -836,7 +945,7 @@ module.exports = function (collection, iteratee, thisArg) {
     return result;
 };
 
-},{"./each":4}],8:[function(require,module,exports){
+},{"./each":5}],9:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -863,7 +972,7 @@ module.exports = function (object, iterator, thisArg) {
     }
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -881,7 +990,7 @@ module.exports = function (object) {
     return {}.toString.call(object).match(REGEX)[1];
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -899,7 +1008,7 @@ module.exports = function (object) {
     return getType(object) === 'Array';
 };
 
-},{"./getType":9}],11:[function(require,module,exports){
+},{"./getType":10}],12:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -917,7 +1026,7 @@ module.exports = function (object) {
     return getType(object) === 'Boolean';
 };
 
-},{"./getType":9}],12:[function(require,module,exports){
+},{"./getType":10}],13:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -935,7 +1044,7 @@ module.exports = function (object) {
     return getType(object) === 'Function';
 };
 
-},{"./getType":9}],13:[function(require,module,exports){
+},{"./getType":10}],14:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -953,7 +1062,7 @@ module.exports = function (object) {
     return getType(object) === 'Number';
 };
 
-},{"./getType":9}],14:[function(require,module,exports){
+},{"./getType":10}],15:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -971,7 +1080,7 @@ module.exports = function (object) {
     return getType(object) === 'Object';
 };
 
-},{"./getType":9}],15:[function(require,module,exports){
+},{"./getType":10}],16:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -989,7 +1098,7 @@ module.exports = function (object) {
     return getType(object) === 'String';
 };
 
-},{"./getType":9}],16:[function(require,module,exports){
+},{"./getType":10}],17:[function(require,module,exports){
 /*
  * Microdash - Tiny utilities for Node and the browser
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1013,7 +1122,7 @@ module.exports = function (collection, iteratee, thisArg) {
     return result;
 };
 
-},{"./each":4}],17:[function(require,module,exports){
+},{"./each":5}],18:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1037,90 +1146,7 @@ ToggleBehaviour.prototype.handle = function ($element, options) {
 
 module.exports = ToggleBehaviour;
 
-},{}],18:[function(require,module,exports){
-/*
- * Dynamic - Declarative DOM behaviour
- * Copyright (c) Dan Phillimore (asmblah)
- * https://github.com/asmblah/dynamic
- *
- * Released under the MIT license
- * https://github.com/asmblah/dynamic/raw/master/MIT-LICENSE.txt
- */
-
-'use strict';
-
-var _ = require('microdash');
-
-function CodeGenerator() {
-
-}
-
-CodeGenerator.prototype.generate = function (ast) {
-    function generateFrom(node, parent) {
-        var args;
-
-        if (node.type === 'BinaryExpression') {
-            return '(' +
-                generateFrom(node.left, node) + ' ' +
-                node.operator + ' ' +
-                generateFrom(node.right, node) +
-                ')';
-        }
-
-        if (node.type === 'CallExpression') {
-            args = _.map(node.arguments, function (argNode) {
-                return generateFrom(argNode, node);
-            });
-
-            return generateFrom(node.callee, node) + '(' + args.join(', ') + ')';
-        }
-
-        if (node.type === 'UnaryExpression') {
-            return node.operator + generateFrom(node.argument, node);
-        }
-
-        if (node.type === 'MemberExpression' && node.computed) {
-            return generateFrom(node.object, node) + '[' + generateFrom(node.property, node) + ']';
-        }
-
-        if (node.type === 'MemberExpression' && !node.computed) {
-            return generateFrom(node.object, node) + '.' + generateFrom(node.property, node);
-        }
-
-        if (node.type === 'ArrayExpression') {
-            return '[' +
-                _.map(node.elements, function (elementNode) {
-                    return generateFrom(elementNode, node);
-                }).join(', ') +
-                ']';
-        }
-
-        if (node.type === 'Literal') {
-            return node.raw;
-        }
-
-        if (node.type === 'Identifier') {
-            if (parent.type === 'MemberExpression' && node === parent.property && !parent.computed) {
-                return node.name;
-            }
-
-            return 'context.' + node.name;
-        }
-
-        if (node.type === 'ConditionalExpression') {
-            return '(' + generateFrom(node.test, node) + ' ? ' +
-                generateFrom(node.consequent, node) + ' : ' +
-                generateFrom(node.alternate, node) +
-                ')';
-        }
-    }
-
-    return generateFrom(ast);
-};
-
-module.exports = CodeGenerator;
-
-},{"microdash":3}],19:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1224,35 +1250,7 @@ _.extend(Dynamic.prototype, {
 
 module.exports = Dynamic;
 
-},{"microdash":3}],20:[function(require,module,exports){
-/*
- * Dynamic - Declarative DOM behaviour
- * Copyright (c) Dan Phillimore (asmblah)
- * https://github.com/asmblah/dynamic
- *
- * Released under the MIT license
- * https://github.com/asmblah/dynamic/raw/master/MIT-LICENSE.txt
- */
-
-'use strict';
-
-function ExpressionEvaluator(jsep, codeGenerator) {
-    this.codeGenerator = codeGenerator;
-    this.jsep = jsep;
-}
-
-ExpressionEvaluator.prototype.evaluate = function (expression, context) {
-    var evaluator = this,
-        ast = evaluator.jsep(expression),
-        code = evaluator.codeGenerator.generate(ast);
-
-    /*jshint evil: true */
-    return new Function('context', 'return ' + code + ';')(context);
-};
-
-module.exports = ExpressionEvaluator;
-
-},{}],21:[function(require,module,exports){
+},{"microdash":4}],20:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1280,7 +1278,7 @@ DataAttributeOptionReader.prototype.get = function ($element, name, behaviourNam
 
 module.exports = DataAttributeOptionReader;
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1302,7 +1300,7 @@ ObjectOptionReader.prototype.get = function ($element, name, behaviourName, elem
 
 module.exports = ObjectOptionReader;
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1327,7 +1325,8 @@ OptionReader.prototype.get = function ($element, name, behaviourName, defaultVal
     var reader = this,
         expressionContext,
         value = reader.optionReader.get($element, name, behaviourName, elementConfig),
-        valueExpression;
+        valueExpression,
+        valueExpressionAST;
 
     if (value === undef) {
         valueExpression = reader.optionReader.get($element, name + '-expr', behaviourName, elementConfig);
@@ -1344,7 +1343,9 @@ OptionReader.prototype.get = function ($element, name, behaviourName, defaultVal
             '$this': $element
         });
 
-        value = reader.expressionEvaluator.evaluate(valueExpression, expressionContext);
+        valueExpressionAST = reader.expressionEvaluator.parse(valueExpression);
+
+        value = reader.expressionEvaluator.eval(valueExpressionAST, expressionContext);
     }
 
     return value;
@@ -1352,7 +1353,7 @@ OptionReader.prototype.get = function ($element, name, behaviourName, defaultVal
 
 module.exports = OptionReader;
 
-},{"microdash":3}],24:[function(require,module,exports){
+},{"microdash":4}],23:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1412,7 +1413,7 @@ OptionSet.prototype.select = function (name, $defaultCollection) {
 
 module.exports = OptionSet;
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1446,7 +1447,7 @@ OptionSetFactory.prototype.create = function (behaviourName, $element, elementCo
 
 module.exports = OptionSetFactory;
 
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 /*
  * Dynamic - Declarative DOM behaviour
  * Copyright (c) Dan Phillimore (asmblah)
@@ -1501,5 +1502,5 @@ SelectorEngine.prototype.select = function ($element, selector) {
 
 module.exports = SelectorEngine;
 
-},{"microdash":3}]},{},[1])(1)
+},{"microdash":4}]},{},[1])(1)
 });
