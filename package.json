@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "name": "dynamic-demo",
+  "description": "Declarative DOM behaviour",
+  "keywords": [
+    "declarative",
+    "behaviour",
+    "bind"
+  ],
+  "homepage": "https://github.com/asmblah/dynamic",
+  "author": "Dan Phillimore <dan@ovms.co> (http://ovms.co)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/asmblah/dynamic"
+  },
+  "bugs": {
+    "email": "dan@ovms.co",
+    "url": "https://github.com/asmblah/dynamic/issues"
+  },
+  "scripts": {
+    "postinstall": "mkdir -p dist && npm run install:dynamic && npm run install:jquery",
+    "install:dynamic": "cp node_modules/dynamic/dist/dynamic.js dist/dynamic.js",
+    "install:jquery": "cp node_modules/jquery/dist/jquery.js dist/jquery.js"
+  },
+  "dependencies": {
+    "dynamic": "^4.2.1",
+    "jquery": "~1"
+  },
+  "engines": {
+    "node": ">=0.6"
+  },
+  "license": "MIT"
+}
